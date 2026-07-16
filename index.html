@@ -1,0 +1,1627 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Pengajian Al-Ikhlas — Daftar Hadir</title>
+
+<!-- ==== CDN LIBRARIES ==== -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/signature_pad/4.1.6/signature_pad.umd.min.js"></script>
+
+<style>
+/* ==========================================================================
+   DESIGN TOKENS
+   ========================================================================== */
+:root{
+  --bg:#0f1420; --bg-soft:#141a29; --card:#1a2233; --card-2:#202a40;
+  --border:#2a3550; --text:#eef1f7; --text-dim:#9aa5bd; --text-mute:#6b7690;
+  --green:#22c55e; --green-dark:#16a34a; --green-glow:rgba(34,197,94,.18);
+  --red:#f43f5e; --amber:#f59e0b; --blue:#3b82f6; --purple:#a78bfa;
+  --radius:14px; --radius-sm:9px;
+  --shadow:0 8px 24px rgba(0,0,0,.35);
+  font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+}
+[data-theme="light"]{
+  --bg:#f3f5f9; --bg-soft:#ffffff; --card:#ffffff; --card-2:#f6f8fc;
+  --border:#e3e7f0; --text:#151a24; --text-dim:#5b6478; --text-mute:#8992a6;
+  --shadow:0 8px 20px rgba(20,30,60,.08);
+}
+*{box-sizing:border-box; margin:0; padding:0;}
+body{background:var(--bg); color:var(--text); min-height:100vh; transition:background .2s,color .2s;}
+button,input,select,textarea{font-family:inherit; color:inherit;}
+a{color:inherit; text-decoration:none;}
+::-webkit-scrollbar{width:8px; height:8px;}
+::-webkit-scrollbar-thumb{background:var(--border); border-radius:8px;}
+
+/* ==========================================================================
+   LAYOUT
+   ========================================================================== */
+#app{display:none;}
+#app.ready{display:flex; min-height:100vh;}
+
+.sidebar{
+  width:250px; background:var(--bg-soft); border-right:1px solid var(--border);
+  display:flex; flex-direction:column; padding:18px 14px; flex-shrink:0;
+  position:sticky; top:0; height:100vh; overflow-y:auto;
+}
+.brand{display:flex; align-items:center; gap:10px; padding:6px 8px 18px;}
+.brand .logo{width:38px; height:38px; border-radius:10px; background:linear-gradient(135deg,var(--green),var(--green-dark)); display:flex; align-items:center; justify-content:center; font-size:20px;}
+.brand .name{font-weight:700; font-size:15px;}
+.brand .sub{font-size:11px; color:var(--text-mute);}
+
+.nav-group{margin-top:6px; display:flex; flex-direction:column; gap:2px;}
+.nav-item{
+  display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:var(--radius-sm);
+  color:var(--text-dim); font-size:13.5px; cursor:pointer; border:none; background:transparent; width:100%; text-align:left;
+}
+.nav-item:hover{background:var(--card-2); color:var(--text);}
+.nav-item.active{background:var(--green); color:#06210f; font-weight:600;}
+.nav-item .ic{width:18px; text-align:center;}
+
+.side-footer{margin-top:auto; display:flex; flex-direction:column; gap:10px;}
+.toggle-row{display:flex; align-items:center; justify-content:space-between; padding:10px 12px; background:var(--card); border-radius:var(--radius-sm); font-size:13px;}
+.switch{position:relative; width:38px; height:21px; background:var(--border); border-radius:20px; cursor:pointer; flex-shrink:0;}
+.switch.on{background:var(--green);}
+.switch .knob{position:absolute; top:2px; left:2px; width:17px; height:17px; background:#fff; border-radius:50%; transition:.2s;}
+.switch.on .knob{left:19px;}
+.quote-card{background:linear-gradient(135deg,var(--green-dark),#0c7a3d); border-radius:var(--radius); padding:14px; font-size:12.5px; line-height:1.5; color:#eafff1;}
+.quote-card .who{margin-top:8px; font-size:11px; opacity:.8;}
+
+.main{flex:1; min-width:0; display:flex; flex-direction:column;}
+.topbar{display:flex; align-items:center; gap:14px; padding:16px 24px; border-bottom:1px solid var(--border); background:var(--bg-soft); position:sticky; top:0; z-index:20;}
+.search-box{flex:1; display:flex; align-items:center; gap:8px; background:var(--card); border:1px solid var(--border); border-radius:10px; padding:9px 14px; max-width:420px;}
+.search-box input{background:transparent; border:none; outline:none; width:100%; font-size:13.5px;}
+.top-right{display:flex; align-items:center; gap:14px; margin-left:auto;}
+.pill{font-size:12px; color:var(--text-dim);}
+.avatar{width:34px; height:34px; border-radius:50%; background:var(--card-2); display:flex; align-items:center; justify-content:center; font-size:16px; border:1px solid var(--border);}
+.bell{position:relative; font-size:18px; cursor:pointer;}
+.bell .dot{position:absolute; top:-2px; right:-2px; width:8px; height:8px; background:var(--red); border-radius:50%;}
+
+.content{padding:22px 24px 60px; max-width:1400px; width:100%;}
+.page{display:none;}
+.page.active{display:block; animation:fadein .2s ease;}
+@keyframes fadein{from{opacity:0; transform:translateY(4px);} to{opacity:1; transform:none;}}
+
+.page-head{display:flex; align-items:flex-start; justify-content:space-between; gap:16px; margin-bottom:18px; flex-wrap:wrap;}
+.page-head h1{font-size:21px; font-weight:700;}
+.page-head p{font-size:13px; color:var(--text-dim); margin-top:3px;}
+
+.btn{display:inline-flex; align-items:center; gap:7px; padding:10px 16px; border-radius:10px; border:1px solid var(--border); background:var(--card); font-size:13px; font-weight:600; cursor:pointer; transition:.15s;}
+.btn:hover{border-color:var(--green);}
+.btn-primary{background:var(--green); color:#06210f; border-color:var(--green);}
+.btn-primary:hover{background:var(--green-dark);}
+.btn-outline{background:transparent;}
+.btn-danger{color:var(--red); border-color:var(--red);}
+.btn-sm{padding:7px 11px; font-size:12px;}
+.btn-block{width:100%; justify-content:center;}
+.btn[disabled]{opacity:.5; cursor:not-allowed;}
+
+.card{background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:18px; box-shadow:var(--shadow);}
+.card-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;}
+.card-head h3{font-size:14.5px; font-weight:700;}
+
+/* stat grid */
+.stat-grid{display:grid; grid-template-columns:repeat(5,1fr); gap:14px; margin-bottom:18px;}
+.stat-card{background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:16px;}
+.stat-card .ic{width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center; margin-bottom:10px; font-size:16px;}
+.stat-card .val{font-size:22px; font-weight:800;}
+.stat-card .lbl{font-size:12px; color:var(--text-dim); margin-top:2px;}
+.stat-card .sub{font-size:11px; color:var(--green); margin-top:4px;}
+
+.grid-3{display:grid; grid-template-columns:1.3fr 1fr 1fr; gap:14px; margin-bottom:18px;}
+.grid-2{display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:18px;}
+
+.list-row{display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--border);}
+.list-row:last-child{border:none;}
+.badge{font-size:11px; padding:3px 9px; border-radius:20px; font-weight:600;}
+.badge-green{background:var(--green-glow); color:var(--green);}
+.badge-amber{background:rgba(245,158,11,.15); color:var(--amber);}
+.badge-red{background:rgba(244,63,94,.15); color:var(--red);}
+.badge-blue{background:rgba(59,130,246,.15); color:var(--blue);}
+.badge-gray{background:var(--card-2); color:var(--text-dim);}
+
+table{width:100%; border-collapse:collapse; font-size:13px;}
+th{text-align:left; color:var(--text-mute); font-weight:600; font-size:11.5px; text-transform:uppercase; letter-spacing:.03em; padding:10px 12px; border-bottom:1px solid var(--border);}
+td{padding:11px 12px; border-bottom:1px solid var(--border);}
+tr:last-child td{border-bottom:none;}
+.table-wrap{overflow-x:auto;}
+
+.toolbar{display:flex; gap:10px; align-items:center; margin-bottom:16px; flex-wrap:wrap;}
+.toolbar input, .toolbar select{background:var(--card); border:1px solid var(--border); border-radius:10px; padding:9px 12px; font-size:13px;}
+.toolbar input{flex:1; min-width:180px;}
+
+.form-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+.field{display:flex; flex-direction:column; gap:6px; margin-bottom:14px;}
+.field.full{grid-column:1/-1;}
+.field label{font-size:12.5px; font-weight:600; color:var(--text-dim);}
+.field input, .field select, .field textarea{background:var(--card-2); border:1px solid var(--border); border-radius:10px; padding:10px 12px; font-size:13.5px; outline:none;}
+.field input:focus, .field select:focus, .field textarea:focus{border-color:var(--green);}
+.chip-row{display:flex; gap:8px; flex-wrap:wrap;}
+.chip{padding:9px 16px; border-radius:10px; border:1px solid var(--border); background:var(--card-2); font-size:13px; font-weight:600; cursor:pointer;}
+.chip.sel-hadir.active{background:var(--green-glow); border-color:var(--green); color:var(--green);}
+.chip.sel-izin.active{background:rgba(59,130,246,.15); border-color:var(--blue); color:var(--blue);}
+.chip.sel-sakit.active{background:rgba(245,158,11,.15); border-color:var(--amber); color:var(--amber);}
+.chip.sel-alfa.active{background:rgba(244,63,94,.15); border-color:var(--red); color:var(--red);}
+
+.modal-overlay{display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); z-index:100; align-items:flex-start; justify-content:center; padding:40px 16px; overflow-y:auto;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--bg-soft); border:1px solid var(--border); border-radius:var(--radius); padding:22px; width:100%; max-width:560px;}
+.modal-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;}
+.modal-head h3{font-size:16px; font-weight:700;}
+.modal-close{cursor:pointer; font-size:18px; color:var(--text-dim); background:none; border:none;}
+
+.toast-wrap{position:fixed; bottom:20px; right:20px; z-index:200; display:flex; flex-direction:column; gap:8px;}
+.toast{background:var(--card); border:1px solid var(--border); border-left:4px solid var(--green); border-radius:10px; padding:12px 16px; font-size:13px; box-shadow:var(--shadow); min-width:240px; animation:fadein .2s;}
+.toast.error{border-left-color:var(--red);}
+
+.status-dot{width:8px; height:8px; border-radius:50%; display:inline-block; margin-right:6px;}
+.status-dot.online{background:var(--green); box-shadow:0 0 6px var(--green);}
+.status-dot.offline{background:var(--red);}
+
+.qr-box{display:flex; flex-direction:column; align-items:center; gap:10px; padding:16px;}
+.export-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:14px;}
+.export-card{text-align:center;}
+.export-card .ic{font-size:30px; margin-bottom:10px;}
+
+.login-wrap{min-height:100vh; display:flex; align-items:center; justify-content:center; background:radial-gradient(circle at 30% 20%,#12331f,#0f1420 60%);}
+.login-card{width:380px; background:var(--bg-soft); border:1px solid var(--border); border-radius:18px; padding:32px; box-shadow:var(--shadow);}
+.login-card .logo{width:52px; height:52px; border-radius:14px; background:linear-gradient(135deg,var(--green),var(--green-dark)); display:flex; align-items:center; justify-content:center; font-size:26px; margin:0 auto 14px;}
+.login-card h2{text-align:center; font-size:18px; margin-bottom:4px;}
+.login-card p{text-align:center; font-size:12.5px; color:var(--text-dim); margin-bottom:22px;}
+.login-hint{font-size:11.5px; color:var(--text-mute); text-align:center; margin-top:14px;}
+
+.sync-banner{display:flex; align-items:center; gap:10px; background:var(--card-2); border:1px solid var(--border); border-radius:10px; padding:10px 14px; font-size:12.5px; margin-bottom:16px;}
+
+.bottom-nav{display:none;}
+@media (max-width:920px){
+  .sidebar{position:fixed; left:-260px; top:0; z-index:90; transition:.2s; box-shadow:var(--shadow);}
+  .sidebar.open{left:0;}
+  .stat-grid{grid-template-columns:repeat(2,1fr);}
+  .grid-3, .grid-2{grid-template-columns:1fr;}
+  .form-grid{grid-template-columns:1fr;}
+  .export-grid{grid-template-columns:1fr 1fr;}
+  .content{padding:16px 14px 90px;}
+  .bottom-nav{display:flex; position:fixed; bottom:0; left:0; right:0; background:var(--bg-soft); border-top:1px solid var(--border); z-index:80; padding:8px 6px;}
+  .bottom-nav button{flex:1; background:none; border:none; color:var(--text-mute); font-size:10.5px; display:flex; flex-direction:column; align-items:center; gap:3px; padding:6px 0;}
+  .bottom-nav button.active{color:var(--green);}
+  .bottom-nav .ic{font-size:17px;}
+  .menu-btn{display:inline-flex !important;}
+}
+.menu-btn{display:none; background:none; border:none; font-size:20px; cursor:pointer;}
+</style>
+</head>
+<body data-theme="dark">
+
+<!-- ============================== LOGIN ============================== -->
+<div class="login-wrap" id="loginScreen">
+  <div class="login-card">
+    <div class="logo">🕌</div>
+    <h2>Pengajian Al-Ikhlas</h2>
+    <p>Yayasan Al-Ikhlas — Sistem Daftar Hadir</p>
+    <div class="field"><label>Username</label><input id="loginUser" placeholder="admin" autocomplete="username"></div>
+    <div class="field"><label>Password</label><input id="loginPass" type="password" placeholder="••••••••" autocomplete="current-password"></div>
+    <button class="btn btn-primary btn-block" onclick="doLogin()">Masuk</button>
+    <p class="login-hint">Default: admin / admin123 (ubah setelah login pertama).<br>Bisa login offline jika pernah login sebelumnya.</p>
+  </div>
+</div>
+
+<!-- ============================== APP SHELL ============================== -->
+<div id="app">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="logo">🕌</div>
+      <div><div class="name">Pengajian Al-Ikhlas</div><div class="sub">Yayasan Al-Ikhlas</div></div>
+    </div>
+    <nav class="nav-group">
+      <button class="nav-item active" data-page="dashboard"><span class="ic">📊</span> Dashboard</button>
+      <button class="nav-item" data-page="absensi"><span class="ic">📋</span> Absensi</button>
+      <button class="nav-item" data-page="peserta"><span class="ic">👥</span> Peserta</button>
+      <button class="nav-item" data-page="kategori"><span class="ic">🏷️</span> Kategori Pengajian</button>
+      <button class="nav-item" data-page="kegiatan"><span class="ic">📅</span> Kegiatan</button>
+      <button class="nav-item" data-page="infaq"><span class="ic">💰</span> Infaq</button>
+      <button class="nav-item" data-page="laporan"><span class="ic">📄</span> Laporan</button>
+      <button class="nav-item" data-page="whatsapp"><span class="ic">💬</span> Kirim WhatsApp</button>
+      <button class="nav-item" data-page="pengaturan"><span class="ic">⚙️</span> Pengaturan</button>
+      <button class="nav-item" data-page="backup"><span class="ic">🗄️</span> Backup & Restore</button>
+    </nav>
+    <div class="side-footer">
+      <div class="toggle-row">Mode Gelap
+        <div class="switch on" id="darkToggle" onclick="toggleTheme()"><div class="knob"></div></div>
+      </div>
+      <div class="quote-card">
+        “Sebaik-baiknya manusia adalah yang bermanfaat bagi manusia lainnya.”
+        <div class="who">— HR. Ahmad —</div>
+      </div>
+      <button class="btn btn-outline btn-block btn-sm" onclick="doLogout()">🚪 Keluar</button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <button class="menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+      <div class="search-box">🔍 <input id="globalSearch" placeholder="Cari peserta, kegiatan, kategori..." oninput="globalSearchHandler(this.value)"></div>
+      <div class="top-right">
+        <span class="pill" id="clockPill">--:--</span>
+        <span class="bell">🔔<span class="dot"></span></span>
+        <div class="avatar">👤</div>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="sync-banner">
+        <span><span class="status-dot" id="statusDot"></span><span id="statusText">Memeriksa koneksi...</span></span>
+        <span id="pendingSyncText" style="color:var(--text-dim);"></span>
+        <button class="btn btn-sm" style="margin-left:auto;" onclick="manualSync()">🔄 Sinkronkan Sekarang</button>
+      </div>
+
+      <!-- ============ DASHBOARD ============ -->
+      <section class="page active" id="page-dashboard"></section>
+      <!-- ============ ABSENSI ============ -->
+      <section class="page" id="page-absensi"></section>
+      <!-- ============ PESERTA ============ -->
+      <section class="page" id="page-peserta"></section>
+      <!-- ============ KATEGORI ============ -->
+      <section class="page" id="page-kategori"></section>
+      <!-- ============ KEGIATAN ============ -->
+      <section class="page" id="page-kegiatan"></section>
+      <!-- ============ INFAQ ============ -->
+      <section class="page" id="page-infaq"></section>
+      <!-- ============ LAPORAN ============ -->
+      <section class="page" id="page-laporan"></section>
+      <!-- ============ WHATSAPP ============ -->
+      <section class="page" id="page-whatsapp"></section>
+      <!-- ============ PENGATURAN ============ -->
+      <section class="page" id="page-pengaturan"></section>
+      <!-- ============ BACKUP ============ -->
+      <section class="page" id="page-backup"></section>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="active" data-page="dashboard"><span class="ic">📊</span>Beranda</button>
+    <button data-page="absensi"><span class="ic">📋</span>Absensi</button>
+    <button data-page="laporan"><span class="ic">📄</span>Laporan</button>
+    <button data-page="pengaturan"><span class="ic">⚙️</span>Akun</button>
+  </nav>
+</div>
+
+<!-- Generic Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal" id="modalBox"></div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+/* ==========================================================================
+   app.config.js — Konfigurasi Aplikasi
+   ========================================================================== */
+
+// >>> GANTI URL INI dengan URL Web App hasil Deploy Google Apps Script Anda <<<
+const CONFIG = {
+  APPS_SCRIPT_URL: 'https://script.google.com/macros/s/GANTI_DENGAN_DEPLOYMENT_ID/exec',
+  APP_NAME: 'Pengajian Al-Ikhlas',
+  WHATSAPP_TEMPLATE:
+`Assalamu'alaikum Warahmatullahi Wabarakatuh.
+
+Silakan mengisi daftar hadir melalui tautan berikut.
+
+Nama: {nama}
+Kategori: {kategori}
+Kegiatan: {kegiatan}
+Tanggal: {tanggal}
+
+Link Absensi: {link}
+
+Jazakumullahu Khairan.`,
+  SYNC_RETRY_MS: 15000,
+  IDB_NAME: 'daftarHadirDB',
+  IDB_VERSION: 1
+};
+
+// Nama store IndexedDB, disamakan dgn nama sheet supaya sinkronisasi 1:1
+const STORES = ['Peserta', 'Kategori', 'Kegiatan', 'Absensi', 'Pengaturan', 'SyncQueue'];
+
+</script>
+<script>
+/* ==========================================================================
+   app.db.js — Lapisan IndexedDB (cache/offline database)
+   Setiap store memakai keyPath "ID". SyncQueue menyimpan antrian operasi
+   yang perlu dikirim ke Google Spreadsheet saat koneksi kembali online.
+   ========================================================================== */
+
+const DB = {
+  _db: null,
+
+  open() {
+    return new Promise((resolve, reject) => {
+      if (this._db) return resolve(this._db);
+      const req = indexedDB.open(CONFIG.IDB_NAME, CONFIG.IDB_VERSION);
+      req.onupgradeneeded = (e) => {
+        const db = e.target.result;
+        STORES.forEach(name => {
+          if (!db.objectStoreNames.contains(name)) {
+            if (name === 'SyncQueue') {
+              db.createObjectStore(name, { keyPath: 'queueId', autoIncrement: true });
+            } else if (name === 'Pengaturan') {
+              db.createObjectStore(name, { keyPath: 'key' });
+            } else {
+              const store = db.createObjectStore(name, { keyPath: 'ID' });
+              store.createIndex('byNama', 'Nama', { unique: false });
+            }
+          }
+        });
+      };
+      req.onsuccess = (e) => { this._db = e.target.result; resolve(this._db); };
+      req.onerror = (e) => reject(e.target.error);
+    });
+  },
+
+  async tx(storeName, mode = 'readonly') {
+    const db = await this.open();
+    return db.transaction(storeName, mode).objectStore(storeName);
+  },
+
+  async getAll(storeName) {
+    const store = await this.tx(storeName);
+    return new Promise((resolve, reject) => {
+      const req = store.getAll();
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror = () => reject(req.error);
+    });
+  },
+
+  async get(storeName, key) {
+    const store = await this.tx(storeName);
+    return new Promise((resolve, reject) => {
+      const req = store.get(key);
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => reject(req.error);
+    });
+  },
+
+  async put(storeName, value) {
+    const store = await this.tx(storeName, 'readwrite');
+    return new Promise((resolve, reject) => {
+      const req = store.put(value);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  },
+
+  async bulkPut(storeName, values) {
+    const store = await this.tx(storeName, 'readwrite');
+    return new Promise((resolve, reject) => {
+      values.forEach(v => store.put(v));
+      store.transaction.oncomplete = () => resolve();
+      store.transaction.onerror = () => reject(store.transaction.error);
+    });
+  },
+
+  async delete(storeName, key) {
+    const store = await this.tx(storeName, 'readwrite');
+    return new Promise((resolve, reject) => {
+      const req = store.delete(key);
+      req.onsuccess = () => resolve();
+      req.onerror = () => reject(req.error);
+    });
+  },
+
+  async clear(storeName) {
+    const store = await this.tx(storeName, 'readwrite');
+    return new Promise((resolve, reject) => {
+      const req = store.clear();
+      req.onsuccess = () => resolve();
+      req.onerror = () => reject(req.error);
+    });
+  },
+
+  // ---- Antrian Sinkronisasi ----
+  async enqueueSync(sheet, operation, payload, localId) {
+    return this.put('SyncQueue', {
+      sheet, operation, payload, localId,
+      createdAt: new Date().toISOString()
+    });
+  },
+
+  async getQueue() {
+    return this.getAll('SyncQueue');
+  },
+
+  async clearQueueItem(queueId) {
+    return this.delete('SyncQueue', queueId);
+  }
+};
+
+</script>
+<script>
+/* ==========================================================================
+   app.api.js — Komunikasi dengan Google Apps Script + Mesin Sinkronisasi
+   Strategi:
+     - Setiap operasi tulis (add/update/delete) langsung disimpan ke IndexedDB
+       (agar UI selalu responsif & bekerja offline).
+     - Jika online, operasi juga langsung dikirim ke Google Spreadsheet.
+     - Jika offline / gagal, operasi dimasukkan ke SyncQueue dan akan
+       dikirim otomatis begitu koneksi kembali (event 'online' + polling).
+     - Setiap record memakai UUID (dibuat di client) sehingga aman dari
+       duplikasi ketika disinkronkan belakangan.
+   ========================================================================== */
+
+const API = {
+
+  isOnline() {
+    return navigator.onLine;
+  },
+
+  uuid() {
+    return (crypto.randomUUID ? crypto.randomUUID() :
+      'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+        const r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      }));
+  },
+
+  async call(action, params = {}, method = 'POST') {
+    if (!CONFIG.APPS_SCRIPT_URL || CONFIG.APPS_SCRIPT_URL.indexOf('GANTI_DENGAN') > -1) {
+      throw new Error('URL Google Apps Script belum dikonfigurasi (lihat app.config.js).');
+    }
+    if (method === 'GET') {
+      const qs = new URLSearchParams({ action, ...params }).toString();
+      const res = await fetch(`${CONFIG.APPS_SCRIPT_URL}?${qs}`, { method: 'GET' });
+      return res.json();
+    }
+    const res = await fetch(CONFIG.APPS_SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({ action, ...params })
+    });
+    return res.json();
+  },
+
+  // ---------------------------------------------------------------------
+  // Generic helper: create/update/delete on a "sheet" with offline support
+  // ---------------------------------------------------------------------
+  async write(sheet, operation, payload) {
+    const storeName = sheet;
+
+    // 1. Selalu tulis dulu ke IndexedDB (source of truth lokal)
+    if (operation === 'delete') {
+      await DB.delete(storeName, payload.ID || payload.id);
+    } else {
+      const record = { ...payload, ID: payload.ID || payload.id || this.uuid() };
+      await DB.put(storeName, record);
+      payload = record;
+    }
+
+    // 2. Coba kirim langsung jika online
+    if (this.isOnline()) {
+      try {
+        const actionName = operation + sheet.replace(/^(.)/, m => m.toUpperCase()).replace(/(Peserta)/, 'Participant')
+          .replace('Kategori', 'Category').replace('Kegiatan', 'Activity').replace('Absensi', 'Attendance');
+        const action = this._actionName(sheet, operation);
+        const res = await this.call(action, payload);
+        if (res.status === 'success') {
+          UI.setSyncStatus('online');
+          return res;
+        }
+        throw new Error(res.message || 'Gagal menyimpan ke server.');
+      } catch (err) {
+        // gagal kirim -> masukkan ke antrian
+        await DB.enqueueSync(sheet, operation, payload, payload.ID);
+        UI.setSyncStatus('offline');
+        return { status: 'queued', message: 'Disimpan offline, akan disinkronkan otomatis.' };
+      }
+    } else {
+      await DB.enqueueSync(sheet, operation, payload, payload.ID);
+      UI.setSyncStatus('offline');
+      return { status: 'queued', message: 'Offline: data disimpan lokal & akan disinkronkan otomatis.' };
+    }
+  },
+
+  _actionName(sheet, operation) {
+    const map = {
+      Peserta: 'Participant', Kategori: 'Category', Kegiatan: 'Activity', Absensi: 'Attendance'
+    };
+    return operation + map[sheet];
+  },
+
+  // ---------------------------------------------------------------------
+  // Read: coba online dulu (lalu cache ke IndexedDB), fallback ke IndexedDB
+  // ---------------------------------------------------------------------
+  async readAll(sheet, getAction) {
+    if (this.isOnline()) {
+      try {
+        const res = await this.call(getAction, {}, 'GET');
+        if (res.status === 'success') {
+          await DB.bulkPut(sheet, res.data);
+          UI.setSyncStatus('online');
+          return res.data;
+        }
+      } catch (err) {
+        UI.setSyncStatus('offline');
+      }
+    }
+    return DB.getAll(sheet);
+  },
+
+  // ---------------------------------------------------------------------
+  // Sinkronisasi antrian offline
+  // ---------------------------------------------------------------------
+  async syncQueue() {
+    if (!this.isOnline()) return { synced: 0, failed: 0 };
+    const queue = await DB.getQueue();
+    if (queue.length === 0) return { synced: 0, failed: 0 };
+
+    let synced = 0, failed = 0;
+    try {
+      const res = await this.call('sync', {
+        items: queue.map(q => ({
+          sheet: q.sheet, operation: q.operation, payload: q.payload, localId: q.queueId
+        }))
+      });
+      if (res.status === 'success') {
+        for (const r of res.data) {
+          if (r.result && (r.result.status === 'success')) {
+            await DB.clearQueueItem(r.localId);
+            synced++;
+          } else {
+            failed++;
+          }
+        }
+      }
+    } catch (err) {
+      failed = queue.length;
+    }
+    return { synced, failed };
+  },
+
+  async login(username, password) {
+    if (this.isOnline()) {
+      try {
+        const res = await this.call('login', { username, password });
+        if (res.status === 'success') {
+          localStorage.setItem('dh_session', JSON.stringify(res.data));
+          localStorage.setItem('dh_lastlogin_hash', btoa(username + ':' + password));
+        }
+        return res;
+      } catch (err) {
+        // fallthrough to offline check
+      }
+    }
+    // offline login: cocokkan dengan hash login terakhir yang berhasil
+    const savedHash = localStorage.getItem('dh_lastlogin_hash');
+    if (savedHash && savedHash === btoa(username + ':' + password)) {
+      return { status: 'success', message: 'Login offline berhasil.', data: JSON.parse(localStorage.getItem('dh_session') || '{}') };
+    }
+    return { status: 'error', message: 'Tidak dapat login offline. Sambungkan internet untuk login pertama kali.' };
+  }
+};
+
+</script>
+<script>
+/* ==========================================================================
+   app.ui.js — Helper UI: toast, modal, tema, status sinkronisasi, jam
+   ========================================================================== */
+
+const UI = {
+  toast(message, type = 'success') {
+    const wrap = document.getElementById('toastWrap');
+    const el = document.createElement('div');
+    el.className = 'toast' + (type === 'error' ? ' error' : '');
+    el.textContent = message;
+    wrap.appendChild(el);
+    setTimeout(() => el.remove(), 3500);
+  },
+
+  openModal(html) {
+    document.getElementById('modalBox').innerHTML = html;
+    document.getElementById('modalOverlay').classList.add('open');
+  },
+  closeModal() {
+    document.getElementById('modalOverlay').classList.remove('open');
+    document.getElementById('modalBox').innerHTML = '';
+  },
+
+  setSyncStatus(state) {
+    const dot = document.getElementById('statusDot');
+    const text = document.getElementById('statusText');
+    if (!dot) return;
+    if (state === 'online') {
+      dot.className = 'status-dot online';
+      text.textContent = 'Online — Terhubung ke Google Spreadsheet';
+    } else {
+      dot.className = 'status-dot offline';
+      text.textContent = 'Offline — Menggunakan data lokal (IndexedDB)';
+    }
+    this.refreshPendingCount();
+  },
+
+  async refreshPendingCount() {
+    const q = await DB.getQueue();
+    const el = document.getElementById('pendingSyncText');
+    if (!el) return;
+    el.textContent = q.length > 0 ? `${q.length} data menunggu sinkronisasi` : '';
+  },
+
+  formatRupiah(n) {
+    n = Number(n) || 0;
+    return 'Rp ' + n.toLocaleString('id-ID');
+  },
+
+  formatTanggal(dateStr) {
+    if (!dateStr) return '-';
+    try {
+      const d = new Date(dateStr);
+      return d.toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    } catch (e) { return dateStr; }
+  },
+
+  badgeForKehadiran(k) {
+    const map = { Hadir: 'badge-green', Izin: 'badge-blue', Sakit: 'badge-amber', Alfa: 'badge-red' };
+    return `<span class="badge ${map[k] || 'badge-gray'}">${k || '-'}</span>`;
+  }
+};
+
+function toggleTheme() {
+  const el = document.getElementById('darkToggle');
+  const isOn = el.classList.toggle('on');
+  document.body.setAttribute('data-theme', isOn ? 'dark' : 'light');
+  localStorage.setItem('dh_theme', isOn ? 'dark' : 'light');
+}
+
+function updateClock() {
+  const el = document.getElementById('clockPill');
+  if (!el) return;
+  const now = new Date();
+  el.textContent = now.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }) +
+    ' • ' + now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB';
+}
+
+</script>
+<script>
+/* ==========================================================================
+   app.pages.js — Rendering setiap halaman aplikasi
+   ========================================================================== */
+
+const STATE = {
+  peserta: [], kategori: [], kegiatan: [], absensi: [], pengaturan: {},
+  charts: {}
+};
+
+async function loadAllData() {
+  const [peserta, kategori, kegiatan, absensi] = await Promise.all([
+    API.readAll('Peserta', 'getParticipants'),
+    API.readAll('Kategori', 'getCategories'),
+    API.readAll('Kegiatan', 'getActivities'),
+    API.readAll('Absensi', 'getAttendance')
+  ]);
+  STATE.peserta = peserta; STATE.kategori = kategori; STATE.kegiatan = kegiatan; STATE.absensi = absensi;
+
+  let settings = {};
+  if (API.isOnline()) {
+    try {
+      const res = await API.call('getSettings', {}, 'GET');
+      if (res.status === 'success') settings = res.data;
+    } catch (e) {}
+  }
+  STATE.pengaturan = settings;
+}
+
+function todayStr() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+/* ============================== DASHBOARD ============================== */
+function renderDashboard() {
+  const el = document.getElementById('page-dashboard');
+  const today = todayStr();
+  const todayAbsensi = STATE.absensi.filter(a => a.Tanggal === today);
+  const total = STATE.peserta.length;
+  const hadir = todayAbsensi.filter(a => a.Kehadiran === 'Hadir').length;
+  const izin = todayAbsensi.filter(a => a.Kehadiran === 'Izin').length;
+  const sakit = todayAbsensi.filter(a => a.Kehadiran === 'Sakit').length;
+  const alfa = todayAbsensi.filter(a => a.Kehadiran === 'Alfa').length;
+  const infaqHariIni = todayAbsensi.reduce((s, a) => s + (Number(a.Infaq) || 0), 0);
+  const pct = n => total ? Math.round((n / total) * 1000) / 10 : 0;
+
+  const kegiatanHariIni = STATE.kegiatan.filter(k => k.Tanggal === today);
+
+  el.innerHTML = `
+    <div class="page-head">
+      <div><h1>Selamat Datang 👋</h1><p>Berikut ringkasan aktivitas pengajian hari ini.</p></div>
+      <div class="toolbar" style="margin:0;">
+        <select onchange="renderDashboard()"><option>Semua Kategori</option>${STATE.kategori.map(k => `<option>${k['Nama Kategori']}</option>`).join('')}</select>
+      </div>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-card"><div class="ic badge-green" style="background:var(--green-glow)">👥</div><div class="val">${total}</div><div class="lbl">Total Peserta</div></div>
+      <div class="stat-card"><div class="ic" style="background:var(--green-glow)">✅</div><div class="val">${hadir}</div><div class="lbl">Hadir</div><div class="sub">${pct(hadir)}% dari total</div></div>
+      <div class="stat-card"><div class="ic" style="background:rgba(59,130,246,.15)">🔵</div><div class="val">${izin}</div><div class="lbl">Izin / Berhalangan</div><div class="sub">${pct(izin)}% dari total</div></div>
+      <div class="stat-card"><div class="ic" style="background:rgba(245,158,11,.15)">🟠</div><div class="val">${sakit}</div><div class="lbl">Sakit</div><div class="sub">${pct(sakit)}% dari total</div></div>
+      <div class="stat-card"><div class="ic" style="background:rgba(244,63,94,.15)">🔴</div><div class="val">${alfa}</div><div class="lbl">Alfa</div><div class="sub">${pct(alfa)}% dari total</div></div>
+    </div>
+
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-head"><h3>Grafik Kehadiran (7 Hari Terakhir)</h3></div>
+        <canvas id="chartKehadiran" height="160"></canvas>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Status Kehadiran</h3></div>
+        <canvas id="chartStatus" height="160"></canvas>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Aksi Cepat</h3></div>
+        <div style="display:flex; flex-direction:column; gap:9px;">
+          <button class="btn btn-block" onclick="navigateTo('peserta'); openParticipantModal();">➕ Tambah Peserta</button>
+          <button class="btn btn-block" onclick="navigateTo('kegiatan'); openActivityModal();">📅 Buat Kegiatan</button>
+          <button class="btn btn-block" onclick="navigateTo('peserta');">🔳 QR Code Peserta</button>
+          <button class="btn btn-block" onclick="navigateTo('whatsapp');">💬 Kirim WhatsApp</button>
+          <button class="btn btn-primary btn-block" onclick="navigateTo('laporan');">⬇️ Export Laporan</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-head"><h3>Kegiatan Hari Ini</h3><a href="#" onclick="navigateTo('kegiatan');return false;" style="font-size:12px;color:var(--green);">Lihat Semua ›</a></div>
+        ${kegiatanHariIni.length ? kegiatanHariIni.map(k => `
+          <div class="list-row">
+            <div style="flex:1;"><b>${k['Nama Kegiatan']}</b><div style="font-size:12px;color:var(--text-dim);">${k.Jam || ''} • ${k.Lokasi || ''}</div></div>
+            <span class="badge badge-blue">Akan Datang</span>
+          </div>`).join('') : `<p style="color:var(--text-dim);font-size:13px;">Belum ada kegiatan hari ini.</p>`}
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Infaq Hari Ini</h3></div>
+        <div style="font-size:24px;font-weight:800;margin-bottom:10px;">${UI.formatRupiah(infaqHariIni)}</div>
+        ${['Tunai', 'Transfer', 'QRIS'].map(m => {
+          const val = todayAbsensi.filter(a => a['Metode Pembayaran'] === m).reduce((s, a) => s + (Number(a.Infaq) || 0), 0);
+          const p = infaqHariIni ? Math.round(val / infaqHariIni * 100) : 0;
+          return `<div style="margin-bottom:8px;"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span>${m}</span><span>${UI.formatRupiah(val)} (${p}%)</span></div>
+          <div style="height:6px;background:var(--card-2);border-radius:6px;overflow:hidden;"><div style="height:100%;width:${p}%;background:var(--green);"></div></div></div>`;
+        }).join('')}
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Pengumuman</h3></div>
+        <p style="font-size:13px; color:var(--text-dim); line-height:1.6;">Jangan lupa untuk selalu absensi setiap mengikuti kegiatan pengajian.<br><br>Semoga Allah memudahkan setiap urusan kita.</p>
+      </div>
+    </div>
+  `;
+
+  renderTrendChart();
+  renderStatusDonut(hadir, izin, sakit, alfa);
+}
+
+function renderTrendChart() {
+  const ctx = document.getElementById('chartKehadiran');
+  if (!ctx) return;
+  const days = [...Array(7)].map((_, i) => {
+    const d = new Date(); d.setDate(d.getDate() - (6 - i));
+    return d.toISOString().slice(0, 10);
+  });
+  const counts = days.map(d => STATE.absensi.filter(a => a.Tanggal === d && a.Kehadiran === 'Hadir').length);
+  if (STATE.charts.trend) STATE.charts.trend.destroy();
+  STATE.charts.trend = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: days.map(d => new Date(d).toLocaleDateString('id-ID', { weekday: 'short' })),
+      datasets: [{ data: counts, borderColor: '#22c55e', backgroundColor: 'rgba(34,197,94,.15)', fill: true, tension: .4 }]
+    },
+    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+  });
+}
+
+function renderStatusDonut(hadir, izin, sakit, alfa) {
+  const ctx = document.getElementById('chartStatus');
+  if (!ctx) return;
+  if (STATE.charts.donut) STATE.charts.donut.destroy();
+  STATE.charts.donut = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Hadir', 'Izin', 'Sakit', 'Alfa'],
+      datasets: [{ data: [hadir, izin, sakit, alfa], backgroundColor: ['#22c55e', '#3b82f6', '#f59e0b', '#f43f5e'] }]
+    },
+    options: { plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 } } } } }
+  });
+}
+
+/* ============================== PESERTA ============================== */
+function renderPeserta() {
+  const el = document.getElementById('page-peserta');
+  el.innerHTML = `
+    <div class="page-head">
+      <div><h1>Data Peserta</h1><p>${STATE.peserta.length} peserta terdaftar.</p></div>
+      <button class="btn btn-primary" onclick="openParticipantModal()">➕ Tambah Peserta</button>
+    </div>
+    <div class="card">
+      <div class="toolbar">
+        <input placeholder="Cari nama / no anggota..." oninput="filterPesertaTable(this.value)">
+        <select onchange="filterPesertaStatus(this.value)">
+          <option value="">Semua Status</option>
+          <option>Anggota</option><option>Simpatisan</option><option>Pengurus</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <table id="pesertaTable">
+          <thead><tr><th>No Anggota</th><th>Nama</th><th>JK</th><th>Status</th><th>No HP</th><th>QR</th><th>Aksi</th></tr></thead>
+          <tbody>${pesertaRows(STATE.peserta)}</tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function pesertaRows(list) {
+  if (!list.length) return `<tr><td colspan="7" style="text-align:center;color:var(--text-dim);padding:24px;">Belum ada data peserta.</td></tr>`;
+  return list.map(p => `
+    <tr>
+      <td>${p['No Anggota'] || '-'}</td>
+      <td><b>${p.Nama}</b></td>
+      <td>${p['Jenis Kelamin'] || '-'}</td>
+      <td><span class="badge badge-gray">${p.Status || '-'}</span></td>
+      <td>${p['Nomor HP'] || '-'}</td>
+      <td><button class="btn btn-sm" onclick="showQrModal('${p.ID}')">🔳 Lihat</button></td>
+      <td style="white-space:nowrap;">
+        <button class="btn btn-sm" onclick="openParticipantModal('${p.ID}')">✏️</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteParticipant('${p.ID}')">🗑️</button>
+      </td>
+    </tr>`).join('');
+}
+
+function filterPesertaTable(q) {
+  q = q.toLowerCase();
+  const filtered = STATE.peserta.filter(p =>
+    (p.Nama || '').toLowerCase().includes(q) || (p['No Anggota'] || '').toLowerCase().includes(q));
+  document.querySelector('#pesertaTable tbody').innerHTML = pesertaRows(filtered);
+}
+function filterPesertaStatus(status) {
+  const filtered = status ? STATE.peserta.filter(p => p.Status === status) : STATE.peserta;
+  document.querySelector('#pesertaTable tbody').innerHTML = pesertaRows(filtered);
+}
+
+function openParticipantModal(id) {
+  const p = id ? STATE.peserta.find(x => x.ID === id) : {};
+  UI.openModal(`
+    <div class="modal-head"><h3>${id ? 'Edit' : 'Tambah'} Peserta</h3><button class="modal-close" onclick="UI.closeModal()">✕</button></div>
+    <div class="form-grid">
+      <div class="field"><label>No Anggota</label><input id="f_noAnggota" value="${p['No Anggota'] || ''}"></div>
+      <div class="field"><label>Nama *</label><input id="f_nama" value="${p.Nama || ''}"></div>
+      <div class="field"><label>Jenis Kelamin *</label><select id="f_jk"><option ${p['Jenis Kelamin']==='Laki-laki'?'selected':''}>Laki-laki</option><option ${p['Jenis Kelamin']==='Perempuan'?'selected':''}>Perempuan</option></select></div>
+      <div class="field"><label>Status</label><select id="f_status"><option ${p.Status==='Anggota'?'selected':''}>Anggota</option><option ${p.Status==='Simpatisan'?'selected':''}>Simpatisan</option><option ${p.Status==='Pengurus'?'selected':''}>Pengurus</option></select></div>
+      <div class="field"><label>Dapukan</label><input id="f_dapukan" value="${p.Dapukan || ''}"></div>
+      <div class="field"><label>Nomor HP</label><input id="f_hp" value="${p['Nomor HP'] || ''}"></div>
+      <div class="field full"><label>Alamat</label><input id="f_alamat" value="${p.Alamat || ''}"></div>
+      <div class="field full"><label>Email</label><input id="f_email" value="${p.Email || ''}"></div>
+    </div>
+    <button class="btn btn-primary btn-block" onclick="saveParticipant('${id || ''}')">💾 Simpan Peserta</button>
+  `);
+}
+
+async function saveParticipant(id) {
+  const payload = {
+    id: id || undefined,
+    'No Anggota': document.getElementById('f_noAnggota').value,
+    'Nama': document.getElementById('f_nama').value,
+    'Jenis Kelamin': document.getElementById('f_jk').value,
+    'Status': document.getElementById('f_status').value,
+    'Dapukan': document.getElementById('f_dapukan').value,
+    'Nomor HP': document.getElementById('f_hp').value,
+    'Alamat': document.getElementById('f_alamat').value,
+    'Email': document.getElementById('f_email').value
+  };
+  if (!payload['Nama']) return UI.toast('Nama wajib diisi.', 'error');
+  const res = await API.write('Peserta', id ? 'update' : 'add', payload);
+  UI.toast(res.message || 'Tersimpan.');
+  UI.closeModal();
+  await loadAllData(); renderPeserta();
+}
+
+async function deleteParticipant(id) {
+  if (!confirm('Hapus peserta ini? Tindakan tidak dapat dibatalkan.')) return;
+  const res = await API.write('Peserta', 'delete', { ID: id });
+  UI.toast(res.message || 'Dihapus.');
+  await loadAllData(); renderPeserta();
+}
+
+function showQrModal(id) {
+  const p = STATE.peserta.find(x => x.ID === id);
+  const link = `${CONFIG.APPS_SCRIPT_URL}?id=${id}`;
+  UI.openModal(`
+    <div class="modal-head"><h3>QR Code Peserta</h3><button class="modal-close" onclick="UI.closeModal()">✕</button></div>
+    <div class="qr-box">
+      <div id="qrRender"></div>
+      <b>${p.Nama}</b>
+      <span style="color:var(--text-dim);font-size:12px;">No. Anggota: ${p['No Anggota'] || '-'}</span>
+      <a href="${link}" style="color:var(--green);font-size:12px;word-break:break-all;">${link}</a>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-sm" onclick="downloadQr('${p.Nama}')">⬇️ Unduh</button>
+        <button class="btn btn-sm" onclick="printQr()">🖨️ Cetak</button>
+      </div>
+    </div>
+  `);
+  new QRCode(document.getElementById('qrRender'), { text: link, width: 200, height: 200 });
+}
+function downloadQr(nama) {
+  const canvas = document.querySelector('#qrRender canvas');
+  if (!canvas) return;
+  const a = document.createElement('a');
+  a.download = `QR-${nama}.png`;
+  a.href = canvas.toDataURL('image/png');
+  a.click();
+}
+function printQr() {
+  const html = document.getElementById('qrRender').innerHTML;
+  const w = window.open('', '_blank');
+  w.document.write(`<html><body style="text-align:center;padding:40px;">${html}</body></html>`);
+  w.print();
+}
+
+/* ============================== ABSENSI ============================== */
+function renderAbsensi() {
+  const el = document.getElementById('page-absensi');
+  const today = todayStr();
+  const list = STATE.absensi.filter(a => a.Tanggal === today);
+  el.innerHTML = `
+    <div class="page-head">
+      <div><h1>Daftar Hadir</h1><p>Absensi tanggal ${UI.formatTanggal(today)}</p></div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn" onclick="openQrScanModal()">📷 Scan QR</button>
+        <button class="btn btn-primary" onclick="openAttendanceModal()">➕ Tambah Absensi</button>
+      </div>
+    </div>
+    <div class="card">
+      <div class="toolbar">
+        <input placeholder="Cari peserta..." oninput="filterAbsensiTable(this.value)">
+        <select onchange="filterAbsensiKehadiran(this.value)">
+          <option value="">Semua ${list.length}</option>
+          <option value="Hadir">Hadir ${list.filter(a=>a.Kehadiran==='Hadir').length}</option>
+          <option value="Izin">Izin ${list.filter(a=>a.Kehadiran==='Izin').length}</option>
+          <option value="Sakit">Sakit ${list.filter(a=>a.Kehadiran==='Sakit').length}</option>
+          <option value="Alfa">Alfa ${list.filter(a=>a.Kehadiran==='Alfa').length}</option>
+        </select>
+      </div>
+      <div class="table-wrap">
+        <table id="absensiTable">
+          <thead><tr><th>#</th><th>Nama</th><th>Kegiatan</th><th>Jam</th><th>Status</th><th>Infaq</th></tr></thead>
+          <tbody>${absensiRows(list)}</tbody>
+        </table>
+      </div>
+    </div>
+  `;
+}
+
+function absensiRows(list) {
+  if (!list.length) return `<tr><td colspan="6" style="text-align:center;color:var(--text-dim);padding:24px;">Belum ada absensi hari ini.</td></tr>`;
+  return list.map((a, i) => `
+    <tr>
+      <td>${i + 1}</td>
+      <td><b>${a.Nama}</b></td>
+      <td>${a.Kegiatan || '-'}</td>
+      <td>${a['Jam Datang'] || '-'} ${a['Zona Waktu'] || ''}</td>
+      <td>${UI.badgeForKehadiran(a.Kehadiran)}</td>
+      <td>${UI.formatRupiah(a.Infaq)}</td>
+    </tr>`).join('');
+}
+function filterAbsensiTable(q) {
+  q = q.toLowerCase();
+  const today = todayStr();
+  const filtered = STATE.absensi.filter(a => a.Tanggal === today && (a.Nama || '').toLowerCase().includes(q));
+  document.querySelector('#absensiTable tbody').innerHTML = absensiRows(filtered);
+}
+function filterAbsensiKehadiran(k) {
+  const today = todayStr();
+  const filtered = STATE.absensi.filter(a => a.Tanggal === today && (!k || a.Kehadiran === k));
+  document.querySelector('#absensiTable tbody').innerHTML = absensiRows(filtered);
+}
+
+let _selectedKehadiran = 'Hadir';
+let _sigPad = null;
+
+function openAttendanceModal(prefillId) {
+  const p = prefillId ? STATE.peserta.find(x => x.ID === prefillId) : null;
+  _selectedKehadiran = 'Hadir';
+  UI.openModal(`
+    <div class="modal-head"><h3>Form Absensi</h3><button class="modal-close" onclick="UI.closeModal()">✕</button></div>
+    <div class="form-grid">
+      <div class="field full"><label>Peserta *</label>
+        <select id="f_peserta">
+          <option value="">— Pilih Peserta —</option>
+          ${STATE.peserta.map(x => `<option value="${x.ID}" ${p && p.ID===x.ID?'selected':''}>${x.Nama}</option>`).join('')}
+        </select>
+      </div>
+      <div class="field"><label>Kategori</label>
+        <select id="f_kategori">${STATE.kategori.map(k => `<option>${k['Nama Kategori']}</option>`).join('')}</select>
+      </div>
+      <div class="field"><label>Kegiatan</label>
+        <select id="f_kegiatan">${STATE.kegiatan.map(k => `<option>${k['Nama Kegiatan']}</option>`).join('')}</select>
+      </div>
+      <div class="field full">
+        <label>Kehadiran *</label>
+        <div class="chip-row">
+          <button type="button" class="chip sel-hadir active" data-v="Hadir" onclick="pickKehadiran(this)">Hadir</button>
+          <button type="button" class="chip sel-izin" data-v="Izin" onclick="pickKehadiran(this)">Izin</button>
+          <button type="button" class="chip sel-sakit" data-v="Sakit" onclick="pickKehadiran(this)">Sakit</button>
+          <button type="button" class="chip sel-alfa" data-v="Alfa" onclick="pickKehadiran(this)">Alfa</button>
+        </div>
+      </div>
+      <div class="field"><label>Infaq (Rp)</label><input id="f_infaq" type="number" value="0"></div>
+      <div class="field"><label>Metode Pembayaran</label><select id="f_metode"><option>Tunai</option><option>Transfer</option><option>QRIS</option></select></div>
+      <div class="field full"><label>Keterangan</label><input id="f_ket" placeholder="Opsional"></div>
+      <div class="field full">
+        <label>Tanda Tangan</label>
+        <canvas id="sigCanvas" style="width:100%;height:120px;background:var(--card-2);border:1px solid var(--border);border-radius:10px;"></canvas>
+        <button type="button" class="btn btn-sm" style="margin-top:6px;" onclick="_sigPad && _sigPad.clear()">Reset Tanda Tangan</button>
+      </div>
+    </div>
+    <button class="btn btn-primary btn-block" onclick="saveAttendance()">✅ Simpan Absensi</button>
+  `);
+  const canvas = document.getElementById('sigCanvas');
+  canvas.width = canvas.offsetWidth; canvas.height = 120;
+  _sigPad = new SignaturePad(canvas);
+}
+
+function pickKehadiran(btn) {
+  document.querySelectorAll('.chip[data-v]').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  _selectedKehadiran = btn.dataset.v;
+}
+
+async function saveAttendance() {
+  const pesertaId = document.getElementById('f_peserta').value;
+  const p = STATE.peserta.find(x => x.ID === pesertaId);
+  if (!p) return UI.toast('Pilih peserta terlebih dahulu.', 'error');
+
+  const now = new Date();
+  const payload = {
+    Tanggal: todayStr(),
+    Kategori: document.getElementById('f_kategori').value,
+    Kegiatan: document.getElementById('f_kegiatan').value,
+    Nama: p.Nama,
+    'Jenis Kelamin': p['Jenis Kelamin'],
+    Status: p.Status,
+    Dapukan: p.Dapukan,
+    'Jam Datang': now.toTimeString().slice(0, 5),
+    'Zona Waktu': 'WIB',
+    Kehadiran: _selectedKehadiran,
+    Infaq: Number(document.getElementById('f_infaq').value) || 0,
+    'Metode Pembayaran': document.getElementById('f_metode').value,
+    Keterangan: document.getElementById('f_ket').value,
+    'Link Tanda Tangan': _sigPad && !_sigPad.isEmpty() ? _sigPad.toDataURL() : '',
+    Device: navigator.platform || '', Browser: navigator.userAgent.slice(0, 60)
+  };
+  const res = await API.write('Absensi', 'add', payload);
+  UI.toast(res.message || 'Absensi tersimpan.');
+  UI.closeModal();
+  await loadAllData(); renderAbsensi(); renderDashboard();
+}
+
+/* ---- QR Scan ---- */
+let _html5QrCode = null;
+function openQrScanModal() {
+  UI.openModal(`
+    <div class="modal-head"><h3>Scan QR Code Peserta</h3><button class="modal-close" onclick="closeQrScan()">✕</button></div>
+    <div id="qrReader" style="width:100%;border-radius:10px;overflow:hidden;"></div>
+    <p style="font-size:12px;color:var(--text-dim);margin-top:10px;text-align:center;">Arahkan kamera ke QR Code peserta untuk absensi otomatis.</p>
+    <div class="field" style="margin-top:14px;"><label>Atau masukkan ID manual</label><input id="manualQrId" placeholder="ID peserta"></div>
+    <button class="btn btn-block" onclick="submitManualQr()">Cari Peserta</button>
+  `);
+  _html5QrCode = new Html5Qrcode('qrReader');
+  Html5Qrcode.getCameras().then(cams => {
+    if (!cams || !cams.length) return;
+    _html5QrCode.start(cams[0].id, { fps: 10, qrbox: 220 }, onQrScanSuccess).catch(() => {});
+  }).catch(() => {
+    UI.toast('Kamera tidak tersedia, gunakan input ID manual.', 'error');
+  });
+}
+function closeQrScan() {
+  if (_html5QrCode) { _html5QrCode.stop().catch(() => {}); }
+  UI.closeModal();
+}
+function onQrScanSuccess(decodedText) {
+  const match = decodedText.match(/id=([a-zA-Z0-9-]+)/);
+  const id = match ? match[1] : decodedText;
+  closeQrScan();
+  const p = STATE.peserta.find(x => x.ID === id);
+  if (!p) return UI.toast('Peserta tidak ditemukan untuk QR ini.', 'error');
+  openAttendanceModal(id);
+}
+function submitManualQr() {
+  const id = document.getElementById('manualQrId').value.trim();
+  const p = STATE.peserta.find(x => x.ID === id || x['No Anggota'] === id);
+  if (!p) return UI.toast('Peserta tidak ditemukan.', 'error');
+  closeQrScan();
+  openAttendanceModal(p.ID);
+}
+
+/* ============================== KATEGORI ============================== */
+function renderKategori() {
+  const el = document.getElementById('page-kategori');
+  el.innerHTML = `
+    <div class="page-head"><div><h1>Kategori Pengajian</h1><p>${STATE.kategori.length} kategori.</p></div>
+      <button class="btn btn-primary" onclick="openCategoryModal()">➕ Tambah Kategori</button></div>
+    <div class="card">
+      ${STATE.kategori.length ? STATE.kategori.map(k => `
+        <div class="list-row">
+          <div style="flex:1;"><b>${k['Nama Kategori']}</b></div>
+          <span class="badge ${k.Aktif ? 'badge-green' : 'badge-gray'}">${k.Aktif ? 'Aktif' : 'Nonaktif'}</span>
+          <button class="btn btn-sm" onclick="openCategoryModal('${k.ID}')">✏️</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteCategory('${k.ID}')">🗑️</button>
+        </div>`).join('') : `<p style="color:var(--text-dim);font-size:13px;">Belum ada kategori.</p>`}
+    </div>
+  `;
+}
+function openCategoryModal(id) {
+  const k = id ? STATE.kategori.find(x => x.ID === id) : {};
+  UI.openModal(`
+    <div class="modal-head"><h3>${id ? 'Edit' : 'Tambah'} Kategori</h3><button class="modal-close" onclick="UI.closeModal()">✕</button></div>
+    <div class="field"><label>Nama Kategori *</label><input id="f_namaKategori" value="${k['Nama Kategori'] || ''}"></div>
+    <div class="field"><label>Status</label><select id="f_aktif"><option value="true" ${k.Aktif!==false?'selected':''}>Aktif</option><option value="false" ${k.Aktif===false?'selected':''}>Nonaktif</option></select></div>
+    <button class="btn btn-primary btn-block" onclick="saveCategory('${id || ''}')">💾 Simpan</button>
+  `);
+}
+async function saveCategory(id) {
+  const nama = document.getElementById('f_namaKategori').value;
+  if (!nama) return UI.toast('Nama kategori wajib diisi.', 'error');
+  const payload = { id: id || undefined, 'Nama Kategori': nama, Aktif: document.getElementById('f_aktif').value === 'true' };
+  const res = await API.write('Kategori', id ? 'update' : 'add', payload);
+  UI.toast(res.message || 'Tersimpan.'); UI.closeModal();
+  await loadAllData(); renderKategori();
+}
+async function deleteCategory(id) {
+  if (!confirm('Hapus kategori ini?')) return;
+  const res = await API.write('Kategori', 'delete', { ID: id });
+  UI.toast(res.message || 'Dihapus.');
+  await loadAllData(); renderKategori();
+}
+
+/* ============================== KEGIATAN ============================== */
+function renderKegiatan() {
+  const el = document.getElementById('page-kegiatan');
+  el.innerHTML = `
+    <div class="page-head"><div><h1>Kegiatan</h1><p>${STATE.kegiatan.length} kegiatan tercatat.</p></div>
+      <button class="btn btn-primary" onclick="openActivityModal()">➕ Tambah Kegiatan</button></div>
+    <div class="card">
+      <div class="table-wrap">
+        <table><thead><tr><th>Nama Kegiatan</th><th>Kategori</th><th>Tanggal</th><th>Jam</th><th>Lokasi</th><th>Aksi</th></tr></thead>
+        <tbody>
+        ${STATE.kegiatan.length ? STATE.kegiatan.map(k => `
+          <tr><td><b>${k['Nama Kegiatan']}</b></td><td>${k.Kategori || '-'}</td><td>${k.Tanggal || '-'}</td><td>${k.Jam || '-'}</td><td>${k.Lokasi || '-'}</td>
+          <td><button class="btn btn-sm" onclick="openActivityModal('${k.ID}')">✏️</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteActivity('${k.ID}')">🗑️</button></td></tr>
+        `).join('') : `<tr><td colspan="6" style="text-align:center;color:var(--text-dim);padding:24px;">Belum ada kegiatan.</td></tr>`}
+        </tbody></table>
+      </div>
+    </div>
+  `;
+}
+function openActivityModal(id) {
+  const k = id ? STATE.kegiatan.find(x => x.ID === id) : {};
+  UI.openModal(`
+    <div class="modal-head"><h3>${id ? 'Edit' : 'Tambah'} Kegiatan</h3><button class="modal-close" onclick="UI.closeModal()">✕</button></div>
+    <div class="form-grid">
+      <div class="field full"><label>Nama Kegiatan *</label><input id="f_namaKegiatan" value="${k['Nama Kegiatan'] || ''}"></div>
+      <div class="field"><label>Kategori</label><select id="f_kegKategori">${STATE.kategori.map(c => `<option ${k.Kategori===c['Nama Kategori']?'selected':''}>${c['Nama Kategori']}</option>`).join('')}</select></div>
+      <div class="field"><label>Tanggal</label><input id="f_kegTanggal" type="date" value="${k.Tanggal || todayStr()}"></div>
+      <div class="field"><label>Jam</label><input id="f_kegJam" type="time" value="${k.Jam || ''}"></div>
+      <div class="field"><label>Lokasi</label><input id="f_kegLokasi" value="${k.Lokasi || ''}"></div>
+    </div>
+    <button class="btn btn-primary btn-block" onclick="saveActivity('${id || ''}')">💾 Simpan</button>
+  `);
+}
+async function saveActivity(id) {
+  const nama = document.getElementById('f_namaKegiatan').value;
+  if (!nama) return UI.toast('Nama kegiatan wajib diisi.', 'error');
+  const payload = {
+    id: id || undefined, 'Nama Kegiatan': nama,
+    Kategori: document.getElementById('f_kegKategori').value,
+    Tanggal: document.getElementById('f_kegTanggal').value,
+    Jam: document.getElementById('f_kegJam').value,
+    Lokasi: document.getElementById('f_kegLokasi').value
+  };
+  const res = await API.write('Kegiatan', id ? 'update' : 'add', payload);
+  UI.toast(res.message || 'Tersimpan.'); UI.closeModal();
+  await loadAllData(); renderKegiatan();
+}
+async function deleteActivity(id) {
+  if (!confirm('Hapus kegiatan ini?')) return;
+  const res = await API.write('Kegiatan', 'delete', { ID: id });
+  UI.toast(res.message || 'Dihapus.');
+  await loadAllData(); renderKegiatan();
+}
+
+/* ============================== INFAQ ============================== */
+function renderInfaq() {
+  const el = document.getElementById('page-infaq');
+  const total = STATE.absensi.reduce((s, a) => s + (Number(a.Infaq) || 0), 0);
+  const byMethod = ['Tunai', 'Transfer', 'QRIS'].map(m => ({
+    m, v: STATE.absensi.filter(a => a['Metode Pembayaran'] === m).reduce((s, a) => s + (Number(a.Infaq) || 0), 0)
+  }));
+  const rows = STATE.absensi.filter(a => Number(a.Infaq) > 0).sort((a,b)=> (b.Timestamp||'').localeCompare(a.Timestamp||''));
+  el.innerHTML = `
+    <div class="page-head"><div><h1>Infaq</h1><p>Rekapitulasi seluruh infaq yang tercatat.</p></div></div>
+    <div class="grid-3">
+      <div class="card"><div class="card-head"><h3>Total Infaq</h3></div><div style="font-size:26px;font-weight:800;">${UI.formatRupiah(total)}</div></div>
+      <div class="card" style="grid-column:span 2;">
+        <div class="card-head"><h3>Berdasarkan Metode</h3></div>
+        ${byMethod.map(x => `<div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-bottom:1px solid var(--border);"><span>${x.m}</span><b>${UI.formatRupiah(x.v)}</b></div>`).join('')}
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3>Riwayat Infaq</h3></div>
+      <div class="table-wrap"><table><thead><tr><th>Tanggal</th><th>Nama</th><th>Kegiatan</th><th>Metode</th><th>Jumlah</th></tr></thead>
+      <tbody>${rows.length ? rows.map(r => `<tr><td>${r.Tanggal}</td><td>${r.Nama}</td><td>${r.Kegiatan||'-'}</td><td>${r['Metode Pembayaran']||'-'}</td><td>${UI.formatRupiah(r.Infaq)}</td></tr>`).join('') : `<tr><td colspan="5" style="text-align:center;color:var(--text-dim);padding:24px;">Belum ada data infaq.</td></tr>`}</tbody></table></div>
+    </div>
+  `;
+}
+
+/* ============================== LAPORAN / EXPORT ============================== */
+function renderLaporan() {
+  const el = document.getElementById('page-laporan');
+  el.innerHTML = `
+    <div class="page-head"><div><h1>Export Laporan</h1><p>Unduh laporan absensi dalam berbagai format.</p></div></div>
+    <div class="card" style="margin-bottom:16px;">
+      <div class="toolbar">
+        <input type="date" id="rangeFrom" value="${todayStr()}">
+        <input type="date" id="rangeTo" value="${todayStr()}">
+        <select id="rangeKategori"><option value="">Semua Kategori</option>${STATE.kategori.map(k=>`<option>${k['Nama Kategori']}</option>`).join('')}</select>
+      </div>
+    </div>
+    <div class="export-grid">
+      <div class="card export-card"><div class="ic">📕</div><h3>Export PDF</h3><p style="font-size:12px;color:var(--text-dim);margin:8px 0 14px;">Laporan dengan logo, tanda tangan &amp; stempel.</p><button class="btn btn-primary btn-block" onclick="exportPDF()">Export PDF</button></div>
+      <div class="card export-card"><div class="ic">📘</div><h3>Export Word</h3><p style="font-size:12px;color:var(--text-dim);margin:8px 0 14px;">Format .doc siap diedit.</p><button class="btn btn-block" onclick="exportWord()">Export Word</button></div>
+      <div class="card export-card"><div class="ic">📗</div><h3>Export Excel</h3><p style="font-size:12px;color:var(--text-dim);margin:8px 0 14px;">Format .xlsx untuk analisis lanjutan.</p><button class="btn btn-block" onclick="exportExcel()">Export Excel</button></div>
+      <div class="card export-card"><div class="ic">🧾</div><h3>Export CSV / JSON</h3><p style="font-size:12px;color:var(--text-dim);margin:8px 0 14px;">Untuk integrasi sistem lain.</p>
+        <div style="display:flex;gap:6px;"><button class="btn btn-sm" style="flex:1" onclick="exportCSV()">CSV</button><button class="btn btn-sm" style="flex:1" onclick="exportJSON()">JSON</button></div>
+      </div>
+    </div>
+  `;
+}
+
+function getFilteredAbsensi() {
+  const from = document.getElementById('rangeFrom')?.value || todayStr();
+  const to = document.getElementById('rangeTo')?.value || todayStr();
+  const kategori = document.getElementById('rangeKategori')?.value || '';
+  return STATE.absensi.filter(a =>
+    a.Tanggal >= from && a.Tanggal <= to && (!kategori || a.Kategori === kategori));
+}
+
+function exportCSV() {
+  const rows = getFilteredAbsensi();
+  if (!rows.length) return UI.toast('Tidak ada data pada rentang ini.', 'error');
+  const headers = Object.keys(rows[0]).filter(k => k !== '_row');
+  const csv = [headers.join(',')].concat(
+    rows.map(r => headers.map(h => `"${String(r[h] ?? '').replace(/"/g, '""')}"`).join(','))
+  ).join('\n');
+  downloadBlob(csv, 'laporan-absensi.csv', 'text/csv');
+  UI.toast('CSV berhasil diunduh.');
+}
+function exportJSON() {
+  const rows = getFilteredAbsensi();
+  if (!rows.length) return UI.toast('Tidak ada data pada rentang ini.', 'error');
+  downloadBlob(JSON.stringify(rows, null, 2), 'laporan-absensi.json', 'application/json');
+  UI.toast('JSON berhasil diunduh.');
+}
+function exportExcel() {
+  const rows = getFilteredAbsensi();
+  if (!rows.length) return UI.toast('Tidak ada data pada rentang ini.', 'error');
+  const ws = XLSX.utils.json_to_sheet(rows.map(r => { const c = { ...r }; delete c._row; return c; }));
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Absensi');
+  XLSX.writeFile(wb, 'laporan-absensi.xlsx');
+  UI.toast('Excel berhasil diunduh.');
+}
+function exportWord() {
+  const rows = getFilteredAbsensi();
+  if (!rows.length) return UI.toast('Tidak ada data pada rentang ini.', 'error');
+  const s = STATE.pengaturan;
+  const tableRows = rows.map((r, i) => `<tr><td>${i+1}</td><td>${r.Nama}</td><td>${r.Kegiatan||'-'}</td><td>${r.Kehadiran}</td><td>${UI.formatRupiah(r.Infaq)}</td></tr>`).join('');
+  const html = `
+    <html><head><meta charset="utf-8"></head><body>
+    <h2>${s['Nama Organisasi'] || CONFIG.APP_NAME}</h2>
+    <h3>Laporan Daftar Hadir Pengajian</h3>
+    <table border="1" cellpadding="6" style="border-collapse:collapse;width:100%;">
+      <tr><th>#</th><th>Nama</th><th>Kegiatan</th><th>Kehadiran</th><th>Infaq</th></tr>
+      ${tableRows}
+    </table>
+    <p>Dicetak pada: ${new Date().toLocaleString('id-ID')}</p>
+    </body></html>`;
+  downloadBlob(html, 'laporan-absensi.doc', 'application/msword');
+  UI.toast('Word berhasil diunduh.');
+}
+function exportPDF() {
+  const rows = getFilteredAbsensi();
+  if (!rows.length) return UI.toast('Tidak ada data pada rentang ini.', 'error');
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  const s = STATE.pengaturan;
+  doc.setFontSize(14); doc.text(s['Nama Organisasi'] || CONFIG.APP_NAME, 14, 16);
+  doc.setFontSize(11); doc.text('Laporan Daftar Hadir Pengajian', 14, 23);
+  doc.setFontSize(9); doc.text('Dicetak: ' + new Date().toLocaleString('id-ID'), 14, 29);
+
+  let y = 40;
+  doc.setFontSize(9);
+  const cols = ['#', 'Nama', 'Kegiatan', 'Kehadiran', 'Infaq'];
+  doc.text(cols.join('   |   '), 14, y);
+  y += 6;
+  rows.forEach((r, i) => {
+    if (y > 275) { doc.addPage(); y = 20; }
+    doc.text(`${i+1}. ${r.Nama} — ${r.Kegiatan||'-'} — ${r.Kehadiran} — ${UI.formatRupiah(r.Infaq)}`, 14, y);
+    y += 6;
+  });
+  y += 14;
+  if (y > 260) { doc.addPage(); y = 20; }
+  doc.text('Penanggung Jawab,', 150, y);
+  doc.text(s['Nama Penanggung Jawab'] || '(...........................)', 150, y + 20);
+  doc.save('laporan-absensi.pdf');
+  UI.toast('PDF berhasil diunduh.');
+}
+function downloadBlob(content, filename, mime) {
+  const blob = new Blob([content], { type: mime });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = filename; a.click();
+  URL.revokeObjectURL(a.href);
+}
+
+/* ============================== WHATSAPP ============================== */
+function renderWhatsapp() {
+  const el = document.getElementById('page-whatsapp');
+  el.innerHTML = `
+    <div class="page-head"><div><h1>Kirim WhatsApp</h1><p>Kirim tautan absensi ke peserta atau grup.</p></div></div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head"><h3>Kirim ke Peserta</h3></div>
+        <div class="field"><label>Peserta</label><select id="wa_peserta">${STATE.peserta.map(p => `<option value="${p.ID}">${p.Nama}</option>`).join('')}</select></div>
+        <div class="field"><label>Kegiatan</label><select id="wa_kegiatan">${STATE.kegiatan.map(k => `<option>${k['Nama Kegiatan']}</option>`).join('')}</select></div>
+        <div class="field"><label>Pesan</label><textarea id="wa_pesan" rows="8"></textarea></div>
+        <button class="btn btn-primary btn-block" onclick="sendWhatsappPersonal()">💬 Kirim via WhatsApp</button>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Kirim ke Grup</h3></div>
+        <p style="font-size:12.5px;color:var(--text-dim);margin-bottom:12px;">Salin pesan berikut lalu tempel ke grup WhatsApp Anda.</p>
+        <div class="field"><label>Kegiatan</label><select id="wa_kegiatan_grup">${STATE.kegiatan.map(k => `<option>${k['Nama Kegiatan']}</option>`).join('')}</select></div>
+        <div class="field"><label>Pesan Grup</label><textarea id="wa_pesan_grup" rows="8"></textarea></div>
+        <button class="btn btn-block" onclick="copyGroupMessage()">📋 Salin Pesan</button>
+      </div>
+    </div>
+  `;
+  refreshWaTemplate();
+  document.getElementById('wa_peserta').addEventListener('change', refreshWaTemplate);
+  document.getElementById('wa_kegiatan').addEventListener('change', refreshWaTemplate);
+  document.getElementById('wa_kegiatan_grup').addEventListener('change', refreshWaTemplateGroup);
+  refreshWaTemplateGroup();
+}
+function buildWaMessage(namaPeserta, namaKegiatan) {
+  const keg = STATE.kegiatan.find(k => k['Nama Kegiatan'] === namaKegiatan) || {};
+  const link = CONFIG.APPS_SCRIPT_URL;
+  return CONFIG.WHATSAPP_TEMPLATE
+    .replace('{nama}', namaPeserta || '-')
+    .replace('{kategori}', keg.Kategori || '-')
+    .replace('{kegiatan}', namaKegiatan || '-')
+    .replace('{tanggal}', keg.Tanggal || todayStr())
+    .replace('{link}', link);
+}
+function refreshWaTemplate() {
+  const p = STATE.peserta.find(x => x.ID === document.getElementById('wa_peserta').value);
+  const keg = document.getElementById('wa_kegiatan').value;
+  document.getElementById('wa_pesan').value = buildWaMessage(p ? p.Nama : '', keg);
+}
+function refreshWaTemplateGroup() {
+  const keg = document.getElementById('wa_kegiatan_grup').value;
+  document.getElementById('wa_pesan_grup').value = buildWaMessage('Jamaah/i sekalian', keg);
+}
+function sendWhatsappPersonal() {
+  const p = STATE.peserta.find(x => x.ID === document.getElementById('wa_peserta').value);
+  if (!p) return UI.toast('Pilih peserta terlebih dahulu.', 'error');
+  const nomor = (p['Nomor HP'] || '').replace(/\D/g, '').replace(/^0/, '62');
+  const msg = encodeURIComponent(document.getElementById('wa_pesan').value);
+  window.open(`https://wa.me/${nomor}?text=${msg}`, '_blank');
+}
+function copyGroupMessage() {
+  const text = document.getElementById('wa_pesan_grup').value;
+  navigator.clipboard.writeText(text).then(() => UI.toast('Pesan disalin ke clipboard.'));
+}
+
+/* ============================== PENGATURAN ============================== */
+function renderPengaturan() {
+  const el = document.getElementById('page-pengaturan');
+  const s = STATE.pengaturan || {};
+  el.innerHTML = `
+    <div class="page-head"><div><h1>Pengaturan Organisasi</h1><p>Data ini digunakan pada laporan &amp; pesan WhatsApp.</p></div></div>
+    <div class="card">
+      <div class="form-grid">
+        <div class="field"><label>Nama Organisasi</label><input id="p_nama" value="${s['Nama Organisasi']||''}"></div>
+        <div class="field"><label>Nomor HP</label><input id="p_hp" value="${s['Nomor HP']||''}"></div>
+        <div class="field full"><label>Alamat</label><input id="p_alamat" value="${s['Alamat']||''}"></div>
+        <div class="field"><label>Email</label><input id="p_email" value="${s['Email']||''}"></div>
+        <div class="field"><label>Website</label><input id="p_web" value="${s['Website']||''}"></div>
+        <div class="field"><label>Nama Penanggung Jawab</label><input id="p_pj" value="${s['Nama Penanggung Jawab']||''}"></div>
+        <div class="field"><label>Jabatan</label><input id="p_jabatan" value="${s['Jabatan']||''}"></div>
+      </div>
+      <button class="btn btn-primary btn-block" onclick="savePengaturan()">💾 Simpan Perubahan</button>
+    </div>
+  `;
+}
+async function savePengaturan() {
+  const payload = {
+    'Nama Organisasi': document.getElementById('p_nama').value,
+    'Nomor HP': document.getElementById('p_hp').value,
+    'Alamat': document.getElementById('p_alamat').value,
+    'Email': document.getElementById('p_email').value,
+    'Website': document.getElementById('p_web').value,
+    'Nama Penanggung Jawab': document.getElementById('p_pj').value,
+    'Jabatan': document.getElementById('p_jabatan').value
+  };
+  try {
+    const res = await API.call('updateSettings', payload);
+    UI.toast(res.message || 'Pengaturan disimpan.');
+    STATE.pengaturan = res.data || payload;
+  } catch (e) {
+    UI.toast('Gagal menyimpan (offline). Coba lagi saat online.', 'error');
+  }
+}
+
+/* ============================== BACKUP & RESTORE ============================== */
+function renderBackup() {
+  const el = document.getElementById('page-backup');
+  el.innerHTML = `
+    <div class="page-head"><div><h1>Backup &amp; Restore</h1><p>Cadangkan seluruh data lokal (IndexedDB) sebagai file JSON.</p></div></div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-head"><h3>Backup Data</h3></div>
+        <p style="font-size:13px;color:var(--text-dim);margin-bottom:14px;">Mengunduh seluruh data Peserta, Kategori, Kegiatan, dan Absensi dalam satu file JSON.</p>
+        <button class="btn btn-primary btn-block" onclick="backupData()">⬇️ Backup Sekarang</button>
+      </div>
+      <div class="card">
+        <div class="card-head"><h3>Restore Data</h3></div>
+        <p style="font-size:13px;color:var(--text-dim);margin-bottom:14px;">Pulihkan data dari file backup JSON. Data yang ada akan digabung (upsert berdasarkan ID).</p>
+        <input type="file" id="restoreFile" accept="application/json" style="margin-bottom:10px;">
+        <button class="btn btn-block" onclick="restoreData()">⬆️ Restore Data</button>
+      </div>
+    </div>
+  `;
+}
+async function backupData() {
+  const data = {
+    Peserta: await DB.getAll('Peserta'), Kategori: await DB.getAll('Kategori'),
+    Kegiatan: await DB.getAll('Kegiatan'), Absensi: await DB.getAll('Absensi'),
+    exportedAt: new Date().toISOString()
+  };
+  downloadBlob(JSON.stringify(data, null, 2), `backup-daftarhadir-${todayStr()}.json`, 'application/json');
+  UI.toast('Backup berhasil diunduh.');
+}
+async function restoreData() {
+  const file = document.getElementById('restoreFile').files[0];
+  if (!file) return UI.toast('Pilih file backup terlebih dahulu.', 'error');
+  const text = await file.text();
+  try {
+    const data = JSON.parse(text);
+    for (const sheet of ['Peserta', 'Kategori', 'Kegiatan', 'Absensi']) {
+      if (Array.isArray(data[sheet])) await DB.bulkPut(sheet, data[sheet]);
+    }
+    UI.toast('Restore berhasil. Menyinkronkan ke server...');
+    await loadAllData(); renderPage(currentPage);
+    manualSync();
+  } catch (e) {
+    UI.toast('File backup tidak valid.', 'error');
+  }
+}
+
+</script>
+<script>
+/* ==========================================================================
+   app.main.js — Inisialisasi Aplikasi, Navigasi, Login, Loop Sinkronisasi
+   ========================================================================== */
+
+let currentPage = 'dashboard';
+
+const PAGE_RENDERERS = {
+  dashboard: renderDashboard, absensi: renderAbsensi, peserta: renderPeserta,
+  kategori: renderKategori, kegiatan: renderKegiatan, infaq: renderInfaq,
+  laporan: renderLaporan, whatsapp: renderWhatsapp, pengaturan: renderPengaturan,
+  backup: renderBackup
+};
+
+function navigateTo(page) {
+  currentPage = page;
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.page === page));
+  document.querySelectorAll('.bottom-nav button').forEach(n => n.classList.toggle('active', n.dataset.page === page));
+  document.getElementById('sidebar').classList.remove('open');
+  renderPage(page);
+}
+function renderPage(page) {
+  (PAGE_RENDERERS[page] || renderDashboard)();
+}
+
+function globalSearchHandler(q) {
+  if (!q) return;
+  q = q.toLowerCase();
+  const foundPeserta = STATE.peserta.find(p => (p.Nama || '').toLowerCase().includes(q));
+  if (foundPeserta) { navigateTo('peserta'); setTimeout(() => filterPesertaTable(q), 50); }
+}
+
+/* ---------------- LOGIN / LOGOUT ---------------- */
+async function doLogin() {
+  const username = document.getElementById('loginUser').value.trim();
+  const password = document.getElementById('loginPass').value;
+  if (!username || !password) return UI.toast('Isi username dan password.', 'error');
+  const res = await API.login(username, password);
+  if (res.status !== 'success') return UI.toast(res.message || 'Login gagal.', 'error');
+  UI.toast('Selamat datang, ' + (res.data.nama || username));
+  startApp();
+}
+function doLogout() {
+  if (!confirm('Keluar dari aplikasi?')) return;
+  localStorage.removeItem('dh_session');
+  document.getElementById('app').classList.remove('ready');
+  document.getElementById('loginScreen').style.display = 'flex';
+}
+
+async function startApp() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('app').classList.add('ready');
+  await DB.open();
+  await loadAllData();
+  navigateTo('dashboard');
+  UI.setSyncStatus(API.isOnline() ? 'online' : 'offline');
+  manualSync();
+}
+
+async function manualSync() {
+  UI.toast(API.isOnline() ? 'Menyinkronkan data...' : 'Sedang offline, data akan disinkronkan otomatis nanti.');
+  const result = await API.syncQueue();
+  if (result.synced > 0) {
+    UI.toast(`${result.synced} data berhasil disinkronkan ke Google Spreadsheet.`);
+    await loadAllData(); renderPage(currentPage);
+  }
+  UI.refreshPendingCount();
+}
+
+/* ---------------- BOOTSTRAP ---------------- */
+window.addEventListener('online', () => { UI.setSyncStatus('online'); manualSync(); });
+window.addEventListener('offline', () => UI.setSyncStatus('offline'));
+
+document.querySelectorAll('.nav-item, .bottom-nav button').forEach(btn => {
+  btn.addEventListener('click', () => navigateTo(btn.dataset.page));
+});
+
+setInterval(updateClock, 1000 * 30);
+setInterval(() => { if (API.isOnline()) manualSync(); }, CONFIG.SYNC_RETRY_MS);
+
+window.addEventListener('DOMContentLoaded', async () => {
+  updateClock();
+  const savedTheme = localStorage.getItem('dh_theme') || 'dark';
+  document.body.setAttribute('data-theme', savedTheme);
+  document.getElementById('darkToggle').classList.toggle('on', savedTheme === 'dark');
+
+  await DB.open();
+
+  // Auto-login jika sesi masih tersimpan (mis. buka lagi via QR link peserta)
+  const session = localStorage.getItem('dh_session');
+  const urlParams = new URLSearchParams(window.location.search);
+  const scannedId = urlParams.get('id');
+
+  if (session) {
+    await startApp();
+    if (scannedId) { openAttendanceModal(scannedId); navigateTo('absensi'); }
+  } else if (scannedId) {
+    // Peserta memindai QR sendiri tanpa login admin: tampilkan form absensi publik sederhana
+    document.getElementById('loginScreen').innerHTML = `
+      <div class="login-card">
+        <div class="logo">🕌</div>
+        <h2>${CONFIG.APP_NAME}</h2>
+        <p>Silakan hubungi admin untuk mengisi absensi Anda, atau minta admin login untuk memproses QR Code ini.</p>
+        <button class="btn btn-primary btn-block" onclick="location.reload()">Muat Ulang</button>
+      </div>`;
+  }
+});
+
+</script>
+</body>
+</html>
